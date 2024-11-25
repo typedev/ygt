@@ -25,9 +25,9 @@ from PyQt6.QtCore import Qt, QRect, pyqtSignal, pyqtSlot, QLine
 from .ygLabel import ygLabel
 
 
-PREVIEW_WIDTH = 450
-PREVIEW_HEIGHT = 500
-STRING_PREVIEW_HEIGHT = 200
+PREVIEW_WIDTH = 500
+PREVIEW_HEIGHT = 350
+STRING_PREVIEW_HEIGHT = 600
 PREVIEW_HORI_MARGIN = 25
 PREVIEW_VERT_MARGIN = 50
 
@@ -621,6 +621,7 @@ class ygStringPreviewPanel(ygLabel):
         self.setFixedSize(PREVIEW_WIDTH, STRING_PREVIEW_HEIGHT)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.rect_list: list = []
+        self.waterfall_list: list = []
         self._full_glyph_list = []
         self._full_pos_list = []
         self.make_pixmap = self.make_pixmap_a
@@ -675,8 +676,8 @@ class ygStringPreviewPanel(ygLabel):
         dark_theme = (self.yg_preview.theme_choice == "dark")
         if self.yg_preview.theme_choice == "auto":
             dark_theme = self.yg_preview.dark_theme
-
-        for s in range(10, 100):
+        self.waterfall_list = []
+        for s in range(10, 37): # 100
             this_is_target = (s == target_size)
             self.face.set_params(
                 glyph=self.yg_preview.glyph_index,
@@ -701,6 +702,7 @@ class ygStringPreviewPanel(ygLabel):
                 else:
                     break
         self.rect_list = self.face.rect_list
+        self.waterfall_list.append(self.rect_list)
         painter.end()
         self.setPixmap(self.pixmap)
 
@@ -719,16 +721,22 @@ class ygStringPreviewPanel(ygLabel):
         dark_theme = (self.yg_preview.theme_choice == "dark")
         if self.yg_preview.theme_choice == "auto":
             dark_theme = self.yg_preview.dark_theme
-        self.rect_list = self.face.draw_string(
-            painter,
-            # self._text,
-            self._full_glyph_list,
-            xposition,
-            yposition,
-            positions = self._full_pos_list,
-            x_limit = PREVIEW_WIDTH - 50,
-            dark_theme = dark_theme
-        )
+        self.waterfall_list = []
+        for ii in range(10, 37):
+            self.face.set_size(ii)
+            self.rect_list = self.face.draw_string(
+                painter,
+                # self._text,
+                self._full_glyph_list,
+                xposition,
+                yposition,
+                positions = self._full_pos_list,
+                x_limit = PREVIEW_WIDTH - 50,
+                dark_theme = dark_theme
+            )
+            self.waterfall_list.append(self.rect_list)
+            yposition += ii * 2
+            
         painter.end()
         self.setPixmap(self.pixmap)
 
@@ -737,14 +745,16 @@ class ygStringPreviewPanel(ygLabel):
         x = int(qp.x())
         y = int(qp.y())
         rr = None
-        for r in self.rect_list:
-            if r.contains(x, y):
-                rr = r
-                break
+        for rect_list in self.waterfall_list:
+            for r in rect_list: #self.
+                if r.contains(x, y):
+                    rr = r
+                    break
         if rr != None:
             if self.make_pixmap == self.make_pixmap_a:
                 self.yg_preview.set_size(rr.size)
             else:
+                self.yg_preview.set_size(rr.size)
                 self.sig_go_to_glyph.emit(rr.gname.decode())
 
 

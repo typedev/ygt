@@ -2,3 +2,5 @@
 build/*
 src/ygt.egg-info/*
 example/yg_config.yaml
+.idea/*
+.venv/*
