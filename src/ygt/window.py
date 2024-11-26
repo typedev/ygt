@@ -1913,9 +1913,14 @@ class MainWindow(QMainWindow):
                 self.app.quit()
 
     def resizeEvent(self, event):
+        # if hasattr(self, "yg_preview") and hasattr(self, "yg_string_preview"):
+        if self.yg_preview and self.yg_string_preview:
+            self.yg_string_preview.move(0, self.yg_preview.height() + 10)
+            self.yg_string_preview.resize(self.yg_preview.width(), self.yg_preview.height())
         self.preferences.set_top_window_size(
             event.size().width(), event.size().height()
         )
+        super().resizeEvent(event)
 
     def moveEvent(self, event):
         if hasattr(self, "preferences"):

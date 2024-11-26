@@ -27,10 +27,10 @@ from .ygLabel import ygLabel
 
 PREVIEW_WIDTH = 500
 PREVIEW_HEIGHT = 350
-STRING_PREVIEW_HEIGHT = 600
+STRING_PREVIEW_HEIGHT = 1600
 PREVIEW_HORI_MARGIN = 25
 PREVIEW_VERT_MARGIN = 50
-
+RANGE_SIZE = 42
 
 class ygPreviewContainer(QScrollArea):
     def __init__(self, preview, string_preview):
@@ -40,6 +40,9 @@ class ygPreviewContainer(QScrollArea):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.addWidget(preview)
         self._layout.addWidget(string_preview)
+        self.setMinimumSize(PREVIEW_WIDTH, PREVIEW_HEIGHT)
+        # self.setMaximumSize(PREVIEW_WIDTH, 2000)
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
         self.setLayout(self._layout)
 
 class ygPreview(QLabel):
@@ -54,15 +57,19 @@ class ygPreview(QLabel):
         self.glyph_index = 0
         self.char_size = 25
         self.label = QLabel()
-        self.label.setStyleSheet("QLabel {background-color: transparent; color: red;}")
+        self.label.setStyleSheet("QLabel {background-color: transparent; color: gray;}")
         self.label.setText(str(self.char_size) + "ppem")
         self.label.setParent(self)
-        self.label.move(50, 30)
+        self.label.move(25, 15) #
 
         self.minimum_x = PREVIEW_WIDTH
         self.minimum_y = PREVIEW_HEIGHT
-        self.setFixedWidth(self.minimum_x)
-        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        # self.setFixedWidth(self.minimum_x)
+        # self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        self.setMinimumSize(self.minimum_x, self.minimum_y)
+        self.setMaximumSize(PREVIEW_WIDTH, PREVIEW_HEIGHT)
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        
         self.vertical_margin = PREVIEW_VERT_MARGIN
         self.horizontal_margin = PREVIEW_HORI_MARGIN
 
@@ -619,6 +626,9 @@ class ygStringPreviewPanel(ygLabel):
         self.minimum_x = PREVIEW_WIDTH
         self.minimum_y = 200
         self.setFixedSize(PREVIEW_WIDTH, STRING_PREVIEW_HEIGHT)
+        # self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        # self.setMinimumSize(PREVIEW_WIDTH, STRING_PREVIEW_HEIGHT)
+        # self.setMaximumSize(PREVIEW_WIDTH, 1000)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.rect_list: list = []
         self.waterfall_list: list = []
@@ -677,7 +687,7 @@ class ygStringPreviewPanel(ygLabel):
         if self.yg_preview.theme_choice == "auto":
             dark_theme = self.yg_preview.dark_theme
         self.waterfall_list = []
-        for s in range(10, 37): # 100
+        for s in range(10, RANGE_SIZE): # 100
             this_is_target = (s == target_size)
             self.face.set_params(
                 glyph=self.yg_preview.glyph_index,
@@ -716,13 +726,13 @@ class ygStringPreviewPanel(ygLabel):
         if not self.yg_preview:
             return
         xposition = 25
-        yposition = 66
+        yposition = 40
         self.face = self.yg_preview.face
         dark_theme = (self.yg_preview.theme_choice == "dark")
         if self.yg_preview.theme_choice == "auto":
             dark_theme = self.yg_preview.dark_theme
         self.waterfall_list = []
-        for ii in range(10, 37):
+        for ii in range(10, RANGE_SIZE):
             self.face.set_size(ii)
             self.rect_list = self.face.draw_string(
                 painter,
@@ -773,8 +783,11 @@ class ygStringPreview(QWidget):
         self._layout = QVBoxLayout()
         self._layout.setContentsMargins(0,0,0,0)
 
-        self.setFixedWidth(PREVIEW_WIDTH)
-        self.setMinimumHeight(STRING_PREVIEW_HEIGHT)
+        # self.setFixedWidth(PREVIEW_WIDTH)
+        # self.setMinimumHeight(STRING_PREVIEW_HEIGHT)
+        self.setMinimumSize(PREVIEW_WIDTH, STRING_PREVIEW_HEIGHT)
+        # self.setMaximumSize(PREVIEW_WIDTH, 1000)
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
 
         self.panel = ygStringPreviewPanel(yg_preview, top_window)
 
@@ -786,14 +799,17 @@ class ygStringPreview(QWidget):
         self.button_widget_layout.addWidget(self.qle)
         self.submit_button = QPushButton("Submit")
         self.button_widget_layout.addWidget(self.submit_button)
+        # self.button_widget_layout.setContentsMargins(0, 0, 0, 0)
+        # self.button_widget.setFixedHeight(30)
         self.button_widget.setLayout(self.button_widget_layout)
+        
 
         self.submit_button.clicked.connect(self.got_string)
         self.sig_string_changed.connect(top_window.preview_current_glyph)
         self.qle.editingFinished.connect(self.got_string)
-
-        self._layout.addWidget(self.panel)
+        
         self._layout.addWidget(self.button_widget)
+        self._layout.addWidget(self.panel)
 
         self.setLayout(self._layout)
 
